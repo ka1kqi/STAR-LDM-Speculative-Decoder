@@ -2,7 +2,7 @@
 
 A research implementation of STAR-LDM-style **Stop–Think–AutoRegress** architecture
 with **Qwen2.5-0.5B** as the AR backbone and **Sentence-T5** continuous structure
-embeddings as the plan representation (Option A).
+embeddings as the plan representation.
 
 ## Architecture overview
 
