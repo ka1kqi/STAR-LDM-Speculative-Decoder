@@ -1,0 +1,19 @@
+You are evaluating story continuations. Given a story context and two possible continuations (labeled A and B), select the one that is more coherent, engaging, and natural as a follow-up to the context.
+
+Consider:
+- Narrative coherence: Does the continuation logically follow the context?
+- Character consistency: Are characters behaving consistently?
+- Engagement: Is the continuation interesting and well-written?
+- Fluency: Is the language natural and grammatically correct?
+
+Context:
+{context}
+
+Continuation A:
+{cont_a}
+
+Continuation B:
+{cont_b}
+
+Which continuation is better? Respond with exactly one letter: A or B.
+Answer:

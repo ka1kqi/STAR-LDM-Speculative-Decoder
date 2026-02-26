@@ -1,0 +1,73 @@
+# ============================================================
+# Toy configuration — smoke-test on CPU in minutes
+# ============================================================
+
+model:
+  ar_model_name: "Qwen/Qwen2.5-0.5B"
+  d_dit: 256
+  dit_layers: 2
+  dit_heads: 4
+  dit_head_dim: 64
+  soft_prompt_len: 4
+  beta: 1.0
+  gamma: 0.0
+  cfg_drop_prob: 0.0
+  final_noise_sigma2: 0.0
+
+diffusion:
+  schedule: "cosine"
+  parameterization: "v_pred"
+
+sampler:
+  type: "ddpm"
+  num_steps: 5
+
+data:
+  dataset_name: "toy"
+  prefix_len: 16
+  cont_len: 16
+  max_samples: 64
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 1
+  learning_rate: 1.0e-3
+  max_steps: 20
+  save_every: 10
+  eval_every: 10
+  log_every: 5
+  seed: 42
+  fp16: false
+  checkpoint_dir: "checkpoints/hybrid_toy"
+
+guidance_mlp:
+  d_hidden: 256
+  n_blocks: 2
+  batch_size: 8
+  max_steps: 10
+  checkpoint_dir: "checkpoints/guidance_mlp_toy"
+
+draft:
+  model_name: "Qwen/Qwen2.5-0.5B"
+  batch_size: 4
+  max_steps: 10
+  checkpoint_dir: "checkpoints/draft_toy"
+
+spec_decode:
+  mode: null
+  draft_k: 2
+
+inference:
+  cfg_scale: 1.0
+  max_new_tokens: 16
+  top_p: 0.95
+  temperature: 1.0
+  repetition_penalty: 1.0
+
+eval:
+  c4:
+    n_samples: 16
+    compute_ppl: false
+  storycloze:
+    n_samples: 4
+    backend: "anthropic"

@@ -1,0 +1,18 @@
+# Suggested minimum versions — exact pins are UNSPECIFIED in STAR-LDM.
+# Adjust as needed for your CUDA / driver stack.
+torch>=2.1.0            # suggested
+transformers>=4.37.0    # suggested — needs Qwen2.5 support
+datasets>=2.16.0        # suggested
+accelerate>=0.25.0      # suggested
+peft>=0.7.0             # suggested
+sentence-transformers>=2.2.2  # suggested — for Sentence-T5
+diffusers>=0.25.0       # suggested — optional, DPM-Solver++ scheduler reference
+mauve-text>=0.3.0       # suggested
+matplotlib>=3.7.0       # suggested
+pyyaml>=6.0             # suggested
+tqdm>=4.65.0            # suggested
+numpy>=1.24.0           # suggested
+scipy>=1.10.0           # suggested
+pytest>=7.4.0           # suggested
+einops>=0.7.0           # suggested
+wandb>=0.16.0           # suggested — optional logging

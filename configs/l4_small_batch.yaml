@@ -1,0 +1,21 @@
+# ============================================================
+# L4 / smaller GPU configuration — reduced batch sizes
+# ============================================================
+
+model:
+  ar_model_name: "Qwen/Qwen2.5-0.5B"
+
+training:
+  batch_size: 4
+  gradient_accumulation_steps: 8
+  fp16: true
+
+guidance_mlp:
+  batch_size: 64
+
+draft:
+  batch_size: 8
+
+sampler:
+  type: "dpm_solver_pp"
+  dpm_solver_steps: 10

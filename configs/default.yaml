@@ -1,0 +1,112 @@
+# ============================================================
+# Default configuration — STAR-LDM defaults + UNSPECIFIED marks
+# ============================================================
+
+# --- Model ---
+model:
+  ar_model_name: "Qwen/Qwen2.5-0.5B"
+  d_plan: 768                    # Sentence-T5 output dim
+  d_dit: 1024                   # STAR-LDM Table 3
+  dit_layers: 6                  # STAR-LDM Table 3
+  dit_heads: 16                  # STAR-LDM Table 3
+  dit_head_dim: 64               # STAR-LDM Table 3
+  soft_prompt_len: 8             # K = 8 (STAR-LDM Table 3)
+  beta: 5.0                      # STAR-LDM Table 3
+  gamma: 0.0                     # UNSPECIFIED — alignment loss weight
+  cfg_drop_prob: 0.1             # UNSPECIFIED — CFG dropout
+  final_noise_sigma2: 0.1        # STAR-LDM Table 3
+
+# --- Diffusion ---
+diffusion:
+  schedule: "cosine"             # STAR-LDM Table 3
+  parameterization: "v_pred"     # STAR-LDM Table 3
+  loss_weighting: "sigmoid_logsnr"  # STAR-LDM Table 3
+  # sigmoid weighting parameters — UNSPECIFIED in paper
+  sigmoid_scale: 1.0
+  sigmoid_shift: 0.0
+
+# --- Sampler ---
+sampler:
+  type: "ddpm"                   # STAR-LDM default
+  num_steps: 50                  # STAR-LDM Table 3
+  # DPM-Solver++ alternative
+  dpm_solver_steps: 20           # UNSPECIFIED — reasonable default
+
+# --- Data ---
+data:
+  dataset_name: "HuggingFaceFW/fineweb"
+  dataset_config: "sample-10BT"
+  text_column: "text"
+  prefix_len: 32
+  cont_len: 64
+  max_samples: null              # null = unlimited
+  st5_model: "sentence-transformers/sentence-t5-xl"
+  st5_cache_dir: "cache/st5_embeddings"
+
+# --- Training ---
+training:
+  batch_size: 16
+  gradient_accumulation_steps: 4  # UNSPECIFIED
+  learning_rate: 1.0e-4           # UNSPECIFIED — common default
+  weight_decay: 0.01              # UNSPECIFIED
+  warmup_steps: 1000              # UNSPECIFIED
+  max_steps: 100000               # UNSPECIFIED
+  save_every: 5000
+  eval_every: 5000
+  log_every: 100
+  seed: 42
+  fp16: true
+  checkpoint_dir: "checkpoints/hybrid"
+
+# --- Guidance MLP ---
+guidance_mlp:
+  d_plan: 768
+  d_hidden: 1536                 # STAR-LDM Table 4
+  n_blocks: 4                    # STAR-LDM Table 4
+  learning_rate: 1.0e-4           # STAR-LDM Table 4
+  batch_size: 256                 # STAR-LDM Table 4
+  max_steps: 50000                # UNSPECIFIED
+  checkpoint_dir: "checkpoints/guidance_mlp"
+  attribute_dims:
+    length_bucket: 4
+    has_list: 2
+    has_question: 2
+
+# --- Draft model (speculative decoding) ---
+draft:
+  model_name: "Qwen/Qwen2.5-0.5B"  # same arch, smaller or distilled
+  learning_rate: 5.0e-5              # UNSPECIFIED
+  batch_size: 32                     # UNSPECIFIED
+  max_steps: 50000                   # UNSPECIFIED
+  checkpoint_dir: "checkpoints/draft"
+
+# --- Speculative decoding ---
+spec_decode:
+  mode: null                     # null | "lossless" | "approximate"
+  draft_k: 4                    # UNSPECIFIED — tokens per draft block
+  tau_min: 0.3                   # UNSPECIFIED
+  tau_max: 0.95                  # UNSPECIFIED
+  tau_scale: 1.0                 # UNSPECIFIED
+
+# --- Inference ---
+inference:
+  cfg_scale: 1.5                 # UNSPECIFIED — >1 enables CFG
+  guidance_scale: 0.0            # classifier guidance weight (0 = off)
+  top_p: 0.95                   # STAR-LDM decoding
+  temperature: 1.0
+  repetition_penalty: 1.2        # STAR-LDM decoding
+  max_new_tokens: 64
+
+# --- Evaluation ---
+eval:
+  c4:
+    n_samples: 5000
+    prefix_len: 32
+    cont_len: 64
+    ppl_model: "meta-llama/Llama-3.2-3B"  # requires license acceptance
+    compute_ppl: true
+  storycloze:
+    n_samples: 200
+    backend: "anthropic"          # or "openai"
+    judge_model: null             # null = backend default
+    template_path: "configs/storycloze_judge_template.txt"
