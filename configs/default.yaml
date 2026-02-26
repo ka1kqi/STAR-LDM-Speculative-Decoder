@@ -97,6 +97,13 @@ inference:
   repetition_penalty: 1.2        # STAR-LDM decoding
   max_new_tokens: 64
 
+# --- Tracking ---
+tracking:
+  enabled: true
+  project: "diff_spec_AR_LM"        # wandb project name
+  entity: null                       # wandb entity (team/user); null = default
+  run_name: null                     # null = auto-generated from job name
+
 # --- Evaluation ---
 eval:
   c4:

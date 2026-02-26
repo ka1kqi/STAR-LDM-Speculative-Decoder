@@ -25,6 +25,7 @@ from src.data.embedding import SentenceT5Encoder
 from src.utils.config import load_config
 from src.utils.logging import get_logger
 from src.utils.seed import set_seed
+from src.utils.tracking import init_tracking, log_metrics, finish as finish_tracking
 
 log = get_logger("train_hybrid")
 
@@ -143,6 +144,9 @@ def main():
     log_every = train_cfg.get("log_every", 100)
     checkpoint_dir = train_cfg.get("checkpoint_dir", "checkpoints/hybrid")
 
+    tracking_on = init_tracking(cfg, job_name="train_hybrid", tags=["hybrid"])
+    log.info(f"Wandb tracking: {'on' if tracking_on else 'off'}")
+
     log.info(f"Training for {max_steps} steps, batch_size={train_cfg.get('batch_size')}, grad_accum={grad_accum}")
 
     model.train()
@@ -178,6 +182,7 @@ def main():
         accum_loss += loss.item()
 
         if (global_step + 1) % grad_accum == 0:
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1e9)
             if scaler is not None:
                 scaler.step(optimizer)
                 scaler.update()
@@ -189,12 +194,22 @@ def main():
         global_step += 1
 
         if global_step % log_every == 0:
+            lr = scheduler.get_last_lr()[0]
+            loss_lm = outputs['loss_lm'].item()
+            loss_dm = outputs['loss_dm'].item()
             log.info(
                 f"step={global_step} loss={accum_loss:.4f} "
-                f"loss_lm={outputs['loss_lm'].item():.4f} "
-                f"loss_dm={outputs['loss_dm'].item():.4f} "
-                f"lr={scheduler.get_last_lr()[0]:.2e}"
+                f"loss_lm={loss_lm:.4f} "
+                f"loss_dm={loss_dm:.4f} "
+                f"lr={lr:.2e}"
             )
+            log_metrics({
+                "train/loss": accum_loss,
+                "train/loss_lm": loss_lm,
+                "train/loss_dm": loss_dm,
+                "train/lr": lr,
+                "train/grad_norm": grad_norm.item() if torch.is_tensor(grad_norm) else grad_norm,
+            }, step=global_step)
             accum_loss = 0.0
 
         if global_step % save_every == 0:
@@ -202,6 +217,7 @@ def main():
 
     # Final save
     save_checkpoint(model, optimizer, scheduler, global_step, cfg, checkpoint_dir)
+    finish_tracking()
     log.info("Training complete.")
 
 

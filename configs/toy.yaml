@@ -64,6 +64,9 @@ inference:
   temperature: 1.0
   repetition_penalty: 1.0
 
+tracking:
+  enabled: false
+
 eval:
   c4:
     n_samples: 16

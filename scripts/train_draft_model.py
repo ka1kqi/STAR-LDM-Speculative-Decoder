@@ -23,6 +23,7 @@ from src.data.dataset import FineWebDataset, ToyDataset, build_dataloader
 from src.utils.config import load_config
 from src.utils.logging import get_logger
 from src.utils.seed import set_seed
+from src.utils.tracking import init_tracking, log_metrics, finish as finish_tracking
 
 log = get_logger("train_draft")
 
@@ -73,6 +74,9 @@ def main():
 
     checkpoint_dir = draft_cfg.get("checkpoint_dir", "checkpoints/draft")
 
+    tracking_on = init_tracking(cfg, job_name="train_draft_model", tags=["draft"])
+    log.info(f"Wandb tracking: {'on' if tracking_on else 'off'}")
+
     log.info(f"Training draft model for {max_steps} steps")
     draft_model.train()
 
@@ -98,7 +102,9 @@ def main():
         scheduler.step()
 
         if step % 100 == 0:
-            log.info(f"step={step} loss={loss.item():.4f}")
+            loss_val = loss.item()
+            log.info(f"step={step} loss={loss_val:.4f}")
+            log_metrics({"train/loss": loss_val, "train/lr": scheduler.get_last_lr()[0]}, step=step)
 
         if step % 5000 == 0:
             save_dir = Path(checkpoint_dir) / f"step_{step}"
@@ -108,6 +114,7 @@ def main():
                 json.dump(cfg, f, indent=2)
             log.info(f"Saved checkpoint → {save_dir}")
 
+    finish_tracking()
     log.info("Draft model training complete.")
 
 
